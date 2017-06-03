@@ -3,7 +3,7 @@ applications:
   memory: 1g
   path: target/blog-point-4.0.0-SNAPSHOT.jar
   services:
-  - blog-point-db
+  - point-db
   - blog-config
   - blog-eureka
   - zipkin-rabbit
