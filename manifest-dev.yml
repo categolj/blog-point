@@ -1,0 +1,12 @@
+applications:
+- name: blog-point-dev
+  memory: 1g
+  path: target/blog-point-4.0.0-SNAPSHOT.jar
+  services:
+  - blog-point-db
+  - blog-config
+  - blog-eureka
+  - zipkin-rabbit
+  env:
+    SECURITY_USER_NAME: user
+    SECURITY_USER_PASSWORD: password
