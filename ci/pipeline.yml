@@ -301,6 +301,9 @@ jobs:
           manifest: repo/manifest.yml
           path: output/app.jar
           current_app_name: blog-point
+          environment_variables:
+            SECURITY_USER_NAME: {{ops-username}}
+            SECURITY_USER_PASSWORD: {{ops-password}}
         on_success:
           put: slack-alert
           params:
