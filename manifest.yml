@@ -6,6 +6,7 @@ applications:
   path: target/blog-point-4.0.0-SNAPSHOT.jar
   services:
   - point-db
+  - point-rabbit
   - blog-config
   - blog-eureka
   - zipkin-rabbit
