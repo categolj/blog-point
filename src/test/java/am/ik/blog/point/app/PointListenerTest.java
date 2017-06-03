@@ -1,5 +1,6 @@
 package am.ik.blog.point.app;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
@@ -8,6 +9,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import am.ik.blog.point.TokenAuthorizationInterceptor;
+import am.ik.blog.point.UserInfoServer;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +37,18 @@ public class PointListenerTest {
 	ObjectMapper objectMapper;
 	@Autowired
 	TestRestTemplate restTemplate;
+	UserInfoServer userInfoServer;
+
+	@Before
+	public void setUp() {
+		userInfoServer = new UserInfoServer(34539);
+		userInfoServer.start();
+	}
+
+	@After
+	public void tearDown() {
+		userInfoServer.shutdown();
+	}
 
 	@Test
 	public void add_to_test_user_1() throws Exception {
@@ -44,9 +61,10 @@ public class PointListenerTest {
 				.setHeader("eventType", "add").build();
 		sink.input().send(message);
 
-		int point = restTemplate
-				.getForObject("/v1/users/{username}", JsonNode.class, username)
-				.get("point").asInt();
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor(username)));
+		int point = restTemplate.getForObject("/v1/user", JsonNode.class).get("point")
+				.asInt();
 		assertThat(point).isEqualTo(250);
 	}
 
@@ -61,9 +79,10 @@ public class PointListenerTest {
 				.setHeader("eventType", "add").build();
 		sink.input().send(message);
 
-		int point = restTemplate
-				.getForObject("/v1/users/{username}", JsonNode.class, username)
-				.get("point").asInt();
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor(username)));
+		int point = restTemplate.getForObject("/v1/user", JsonNode.class).get("point")
+				.asInt();
 		assertThat(point).isEqualTo(100);
 	}
 
@@ -80,8 +99,9 @@ public class PointListenerTest {
 				.setHeader("eventType", "consume").build();
 		sink.input().send(message);
 
-		JsonNode response = restTemplate.getForObject("/v1/users/{username}",
-				JsonNode.class, username);
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor(username)));
+		JsonNode response = restTemplate.getForObject("/v1/user", JsonNode.class);
 		int point = response.get("point").asInt();
 		assertThat(point).isEqualTo(0);
 		Set<Integer> entryIds = StreamSupport
@@ -103,8 +123,9 @@ public class PointListenerTest {
 				.setHeader("eventType", "consume").build();
 		sink.input().send(message);
 
-		JsonNode response = restTemplate.getForObject("/v1/users/{username}",
-				JsonNode.class, username);
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor(username)));
+		JsonNode response = restTemplate.getForObject("/v1/user", JsonNode.class);
 		int point = response.get("point").asInt();
 		assertThat(point).isEqualTo(150);
 		Set<Integer> entryIds = StreamSupport
@@ -126,8 +147,9 @@ public class PointListenerTest {
 				.setHeader("eventType", "consume").build();
 		sink.input().send(message);
 
-		JsonNode response = restTemplate.getForObject("/v1/users/{username}",
-				JsonNode.class, username);
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor(username)));
+		JsonNode response = restTemplate.getForObject("/v1/user", JsonNode.class);
 		int point = response.get("point").asInt();
 		assertThat(point).isEqualTo(150);
 	}

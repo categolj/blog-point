@@ -1,5 +1,6 @@
 package am.ik.blog.point.app;
 
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
@@ -9,6 +10,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,17 +24,34 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import am.ik.blog.point.TokenAuthorizationInterceptor;
+import am.ik.blog.point.UserInfoServer;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Sql({ "classpath:/delete-test-data.sql", "classpath:/insert-test-data.sql" })
 public class PointApiControllerTest {
 	@Autowired
 	TestRestTemplate restTemplate;
+	UserInfoServer userInfoServer;
+
+	@Before
+	public void setUp() {
+		userInfoServer = new UserInfoServer(34539);
+		userInfoServer.start();
+	}
+
+	@After
+	public void tearDown() {
+		userInfoServer.shutdown();
+	}
 
 	@Test
 	public void getPointEvents_non_existing_user() throws Exception {
-		ResponseEntity<JsonNode> response = restTemplate
-				.getForEntity("/v1/users/foo/point_events", JsonNode.class);
+		restTemplate.getRestTemplate()
+				.setInterceptors(singletonList(new TokenAuthorizationInterceptor("foo")));
+		ResponseEntity<JsonNode> response = restTemplate.getForEntity("/v1/point_events",
+				JsonNode.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		JsonNode body = response.getBody();
 		Iterator<JsonNode> pointEvents = body.get("pointEvents").elements();
@@ -41,8 +61,10 @@ public class PointApiControllerTest {
 
 	@Test
 	public void getPointEvents_test_user_1() throws Exception {
-		ResponseEntity<JsonNode> response = restTemplate
-				.getForEntity("/v1/users/test-user-1/point_events", JsonNode.class);
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor("test-user-1")));
+		ResponseEntity<JsonNode> response = restTemplate.getForEntity("/v1/point_events",
+				JsonNode.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		JsonNode body = response.getBody();
 		System.out.println(body);
@@ -86,8 +108,10 @@ public class PointApiControllerTest {
 
 	@Test
 	public void getUser_test_user_1() throws Exception {
-		ResponseEntity<JsonNode> response = restTemplate
-				.getForEntity("/v1/users/test-user-1", JsonNode.class);
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor("test-user-1")));
+		ResponseEntity<JsonNode> response = restTemplate.getForEntity("/v1/user",
+				JsonNode.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		JsonNode body = response.getBody();
 		assertThat(body.get("point").asInt()).isEqualTo(150);
@@ -103,7 +127,9 @@ public class PointApiControllerTest {
 
 	@Test
 	public void getUser_non_existing_user() throws Exception {
-		ResponseEntity<JsonNode> response = restTemplate.getForEntity("/v1/users/foo",
+		restTemplate.getRestTemplate()
+				.setInterceptors(singletonList(new TokenAuthorizationInterceptor("foo")));
+		ResponseEntity<JsonNode> response = restTemplate.getForEntity("/v1/user",
 				JsonNode.class);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 		JsonNode body = response.getBody();
@@ -115,8 +141,9 @@ public class PointApiControllerTest {
 
 	@Test
 	public void checkConsumption_ok() throws Exception {
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor("test-user-1")));
 		Map<String, Object> req = new HashMap<>();
-		req.put("username", "test-user-1");
 		req.put("amount", -150);
 		req.put("entryId", 99);
 
@@ -128,8 +155,9 @@ public class PointApiControllerTest {
 
 	@Test
 	public void checkConsumption_shortage() throws Exception {
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor("test-user-1")));
 		Map<String, Object> req = new HashMap<>();
-		req.put("username", "test-user-1");
 		req.put("amount", -200);
 		req.put("entryId", 99);
 
@@ -142,8 +170,9 @@ public class PointApiControllerTest {
 
 	@Test
 	public void checkConsumption_already_paid() throws Exception {
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor("test-user-1")));
 		Map<String, Object> req = new HashMap<>();
-		req.put("username", "test-user-1");
 		req.put("amount", -100);
 		req.put("entryId", 88);
 
@@ -156,8 +185,9 @@ public class PointApiControllerTest {
 
 	@Test
 	public void checkConsumption_positive_amount() throws Exception {
+		restTemplate.getRestTemplate().setInterceptors(
+				singletonList(new TokenAuthorizationInterceptor("test-user-1")));
 		Map<String, Object> req = new HashMap<>();
-		req.put("username", "test-user-1");
 		req.put("amount", 100);
 		req.put("entryId", 99);
 
@@ -170,8 +200,9 @@ public class PointApiControllerTest {
 
 	@Test
 	public void checkConsumption_non_existing_user() throws Exception {
+		restTemplate.getRestTemplate()
+				.setInterceptors(singletonList(new TokenAuthorizationInterceptor("foo")));
 		Map<String, Object> req = new HashMap<>();
-		req.put("username", "foo");
 		req.put("amount", -100);
 		req.put("entryId", 99);
 
