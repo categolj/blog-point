@@ -7,5 +7,5 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: blog_point_test
+      MYSQL_DATABASE: point_test
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
