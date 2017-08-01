@@ -9,5 +9,6 @@ applications:
   - point-rabbit
   - blog-config
   - blog-eureka
-  - metrics-forwarder  
+  - metrics-forwarder
+  - syslog-drain
   # - zipkin-rabbit
