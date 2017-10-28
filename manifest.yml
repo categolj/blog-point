@@ -1,14 +1,16 @@
 applications:
 - name: blog-point
-  buildpack: https://github.com/cloudfoundry/java-buildpack#v3.18
+  buildpack: java_buildpack
+  domain: sslip.io
+  host: blog-point-202-241-169-198
   memory: 1g
   instances: 1
-  path: target/blog-point-4.0.0-SNAPSHOT.jar
+  path: target/blog-point-4.5.0-SNAPSHOT.jar
   services:
   - point-db
   - point-rabbit
   - blog-config
   - blog-eureka
-  - metrics-forwarder
-  - syslog-drain
-  # - zipkin-rabbit
+  #  - metrics-forwarder
+  #  - syslog-drain
+  #  - zipkin-rabbit
