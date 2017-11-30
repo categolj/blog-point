@@ -2,6 +2,8 @@ kind: Service
 apiVersion: v1
 metadata:
   name: blog-point-service
+  labels:
+    app: blog-point
 spec:
   selector:
     app: blog-point
