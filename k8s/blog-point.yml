@@ -43,32 +43,67 @@ spec:
         ports:
         - containerPort: 8080
         env:
-        - name: PORT
+        - name: SERVER_PORT
           value: "8080"
         - name: SPRING_PROFILES_ACTIVE
-          value: cloud,kubernetes
+          value: kubernetes
         - name: _JAVA_OPTIONS
-          value: "-Xmx304M -Xss1M -XX:MaxMetaspaceSize=145M -XX:ReservedCodeCacheSize=240M -XX:CompressedClassSpaceSize=24M -XX:MaxDirectMemorySize=10M -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Duser.timezone=Asia/Tokyo -Duser.language=ja -Duser.country=JP"
+          value: "-Xmx304M -Xss1M -XX:MaxMetaspaceSize=145M -XX:ReservedCodeCacheSize=240M -XX:CompressedClassSpaceSize=24M -XX:MaxDirectMemorySize=10M -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -XX:MaxRAMFraction=1 -Duser.timezone=Asia/Tokyo -Duser.language=ja -Duser.country=JP -Dinfo.docker.digest=INFO_DOCKER_DIGEST"
         - name: SECURITY_USER_NAME
           valueFrom:
-            configMapKeyRef:
-              name: blog-config
+            secretKeyRef:
+              name: blog-config-secret
               key: ops-username
         - name: SECURITY_USER_PASSWORD
           valueFrom:
-            configMapKeyRef:
-              name: blog-config
+            secretKeyRef:
+              name: blog-config-secret
               key: ops-password
-        - name: VCAP_APPLICATION
+        - name: SPRING_DATASOURCE_URL
           valueFrom:
-            configMapKeyRef:
-              name: blog-point-config
-              key: vcap-application.json
-        - name: VCAP_SERVICES
+            secretKeyRef:
+              name: point-db-secret
+              key: mysql-jdbc-url
+        - name: SPRING_DATASOURCE_USERNAME
           valueFrom:
-            configMapKeyRef:
-              name: blog-point-config
-              key: vcap-services.json
+            secretKeyRef:
+              name: point-db-secret
+              key: mysql-user
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: point-db-secret
+              key: mysql-password
+        - name: SPRING_RABBITMQ_ADDRESSES
+          valueFrom:
+            secretKeyRef:
+              name: point-rabbit-secret
+              key: rabbitmq-host
+        - name: SPRING_RABBITMQ_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: point-rabbit-secret
+              key: rabbitmq-user
+        - name: SPRING_RABBITMQ_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: point-rabbit-secret
+              key: rabbitmq-password
+        - name: SPRING_CLOUD_CONFIG_URI
+          valueFrom:
+            secretKeyRef:
+              name: config-server-secret
+              key: config-server-uri
+        - name: SPRING_CLOUD_CONFIG_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: config-server-secret
+              key: config-server-user
+        - name: SPRING_CLOUD_CONFIG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: config-server-secret
+              key: config-server-password
         resources:
           limits:
             memory: "1024Mi"
